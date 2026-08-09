@@ -28,9 +28,10 @@ html,body{
 .screen{
   position:absolute; inset:0; display:flex; flex-direction:column;
   opacity:0; pointer-events:none; transition:opacity .35s ease;
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
 }
 .screen.active{opacity:1; pointer-events:auto;}
-.scroll{overflow-y:auto; -webkit-overflow-scrolling:touch;}
+.scroll{overflow-y:auto; -webkit-overflow-scrolling:touch; min-height:0;}
 
 /* ---------- common ---------- */
 .topbar{
@@ -89,7 +90,7 @@ html,body{
 
 /* ---------- home ---------- */
 #screen-home{ padding:0 18px 18px; }
-.home-body{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; }
+.home-body{ flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; padding:10px 0 20px; }
 .ticket-bar{
   display:flex; align-items:center; gap:10px; background:rgba(255,255,255,.08);
   padding:8px 16px; border-radius:999px; font-size:14px; font-weight:700;
@@ -122,7 +123,7 @@ html,body{
 
 /* ---------- pack open ---------- */
 #screen-pack{ align-items:center; justify-content:center; }
-.pack-stage{ position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center;}
+.pack-stage{ position:relative; width:100%; flex:1; min-height:340px; display:flex; align-items:center; justify-content:center; flex-direction:column; padding:20px 0;}
 .tap-hint{ position:absolute; bottom:30px; font-size:13px; opacity:.75; animation:pulse 1.6s infinite;}
 @keyframes pulse{ 0%,100%{opacity:.3;} 50%{opacity:.9;} }
 .pack-anim{
@@ -235,7 +236,11 @@ html,body{
 
 /* ---------- collection ---------- */
 #screen-collection{ padding:0 14px 10px; }
-.tabs{ display:flex; gap:6px; overflow-x:auto; padding:6px 2px 10px; flex-shrink:0; }
+.tabs{ display:flex; gap:6px; flex-wrap:wrap; padding:6px 2px 10px; flex-shrink:0; }
+.tab.rare-tab{ background:rgba(255,110,199,.18); }
+.tab.rare-tab.active{ background:linear-gradient(135deg,#ff6ec7,#7b5cff); }
+.tab.mythic-tab{ background:rgba(255,215,0,.15); }
+.tab.mythic-tab.active{ background:linear-gradient(135deg,#7a5200,#ffd700); color:#2a1c00; }
 .tab{
   flex-shrink:0; padding:8px 14px; border-radius:999px; font-size:13px; font-weight:700;
   background:rgba(255,255,255,.08); cursor:pointer; white-space:nowrap;
@@ -244,7 +249,7 @@ html,body{
 .coll-summary{ font-size:12px; opacity:.8; padding:0 4px 8px; flex-shrink:0; }
 .coll-grid{
   display:grid; grid-template-columns:repeat(auto-fill,minmax(70px,1fr)); gap:8px;
-  flex:1; overflow-y:auto; padding-bottom:20px;
+  flex:1; min-height:0; overflow-y:auto; padding-bottom:30px;
 }
 .mini-card{
   aspect-ratio:2/3; border-radius:10px; border:2px solid rgba(255,255,255,.2);
@@ -252,6 +257,18 @@ html,body{
   cursor:pointer; position:relative;
 }
 .mini-card.locked{ background:rgba(255,255,255,.05); color:rgba(255,255,255,.15); border-style:dashed; }
+.mini-card.in-deck{ outline:3px solid #4fc3f7; }
+.mini-card .deck-check{
+  position:absolute; top:4px; left:4px; width:18px; height:18px; border-radius:50%;
+  background:#4fc3f7; color:#fff; font-size:11px; font-weight:800;
+  display:flex; align-items:center; justify-content:center;
+}
+.deck-status-bar{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:8px 12px; margin-bottom:8px; border-radius:12px; background:rgba(255,255,255,.06);
+  font-size:13px; font-weight:700; flex-shrink:0;
+}
+.deck-status-bar button{ padding:8px 14px; font-size:12px; }
 .mini-card.n{ background:linear-gradient(160deg,#4b5563,#28303d);}
 .mini-card.r{ background:linear-gradient(160deg,#0288d1,#01579b);}
 .mini-card.sr{ background:linear-gradient(160deg,#ff9800,#e65100);}
@@ -436,6 +453,10 @@ html,body{
     </div>
     <div class="tabs" id="tabs"></div>
     <div class="coll-summary" id="coll-summary"></div>
+    <div class="deck-status-bar" id="deck-status-bar">
+      <span id="deck-status-text">🃏 デッキ: 0/5</span>
+      <button class="btn secondary" id="btn-edit-deck">デッキを編集する</button>
+    </div>
     <div class="coll-grid scroll" id="coll-grid"></div>
   </div>
 
@@ -446,7 +467,7 @@ html,body{
       <div class="title-logo" style="font-size:18px;">⚔️ カードバトル</div>
       <div style="width:42px;"></div>
     </div>
-    <div id="battle-body" class="scroll" style="flex:1; padding:6px 16px 30px; display:flex; flex-direction:column; align-items:center;"></div>
+    <div id="battle-body" class="scroll" style="flex:1; min-height:0; padding:6px 16px 30px; display:flex; flex-direction:column; align-items:center;"></div>
   </div>
 
   <!-- ジム/四天王 -->
@@ -456,7 +477,7 @@ html,body{
       <div class="title-logo" style="font-size:18px;">🏅 ジム＆四天王</div>
       <div style="width:42px;"></div>
     </div>
-    <div id="gym-body" class="scroll" style="flex:1; padding:6px 16px 30px;"></div>
+    <div id="gym-body" class="scroll" style="flex:1; min-height:0; padding:6px 16px 30px;"></div>
   </div>
 
 </div>
@@ -569,6 +590,41 @@ function allEliteDefeated(){
 }
 buildAllCardsPool();
 
+/* ---------- デッキ編成(図鑑から選ぶ) ---------- */
+function deckRefKey(ref){ return ref.scope+':'+(ref.grade||'')+':'+ref.kanji; }
+function isInDeck(scope, grade, kanji){
+  return STATE.deck.some(d=>d.scope===scope && d.grade===(grade||null) && d.kanji===kanji);
+}
+function toggleDeckCard(scope, grade, kanji){
+  const key = scope+':'+(grade||'')+':'+kanji;
+  const idx = STATE.deck.findIndex(d=>deckRefKey(d)===key);
+  if(idx>=0){ STATE.deck.splice(idx,1); saveState(); return 'removed'; }
+  if(STATE.deck.length>=5){ return 'full'; }
+  STATE.deck.push({scope, grade: grade||null, kanji});
+  saveState();
+  return 'added';
+}
+function resolveDeckCards(){
+  const result=[];
+  STATE.deck = STATE.deck.filter(ref=>{
+    let entry=null, tier=null;
+    if(ref.scope==='grade'){
+      entry = GRADE_LOOKUP[ref.grade] && GRADE_LOOKUP[ref.grade][ref.kanji];
+      if(entry && STATE.owned[ref.grade+':'+ref.kanji]){ tier=GRADE_TIERS[ref.grade][ref.kanji]; }
+      else entry=null;
+    } else if(ref.scope==='rare'){
+      entry = RARE_LOOKUP[ref.kanji];
+      if(entry && STATE.ownedRare[ref.kanji]){ tier='ur'; } else entry=null;
+    } else if(ref.scope==='mythic'){
+      entry = MYTHIC_LOOKUP[ref.kanji];
+      if(entry && STATE.ownedMythic[ref.kanji]){ tier='mythic'; } else entry=null;
+    }
+    if(entry){ result.push({entry,tier}); return true; }
+    return false;
+  });
+  return result;
+}
+
 const TIER_BONUS={n:0,r:24,sr:60,ur:150,mythic:320};
 const TIER_NAME={n:'ノーマル',r:'レア',sr:'スーパーレア',ur:'ウルトラレア',mythic:'ひでん'};
 
@@ -619,6 +675,7 @@ function defaultState(){
     badges:{},
     eliteDefeated:{},
     champion:false,
+    deck:[],
     bgmOn:true,
     sfxOn:true
   };
@@ -1090,10 +1147,15 @@ function finishReveal(){
 
 /* ============ COLLECTION ============ */
 let currentTab=1; // 1-6 = grade, 'rare' = rare pool
-function openCollection(){
+let deckEditMode=false;
+let collectionCameFromBattle=false;
+function openCollection(startDeckEdit){
   currentTab = STATE.grade || 1;
+  deckEditMode = !!startDeckEdit;
+  collectionCameFromBattle = !!startDeckEdit;
   renderTabs();
   renderCollectionGrid();
+  updateDeckStatusBar();
   showScreen('screen-collection');
 }
 function renderTabs(){
@@ -1107,15 +1169,22 @@ function renderTabs(){
     tabs.appendChild(t);
   }
   const rareTab=document.createElement('div');
-  rareTab.className='tab'+(currentTab==='rare'?' active':'');
-  rareTab.textContent='✨とくべつ';
+  rareTab.className='tab rare-tab'+(currentTab==='rare'?' active':'');
+  rareTab.textContent='🈲 教科書外レア';
   rareTab.onclick=()=>{ sfx('tap'); currentTab='rare'; renderTabs(); renderCollectionGrid(); };
   tabs.appendChild(rareTab);
   const mythicTab=document.createElement('div');
-  mythicTab.className='tab'+(currentTab==='mythic'?' active':'');
+  mythicTab.className='tab mythic-tab'+(currentTab==='mythic'?' active':'');
   mythicTab.textContent='🌟ひでん';
   mythicTab.onclick=()=>{ sfx('tap'); currentTab='mythic'; renderTabs(); renderCollectionGrid(); };
   tabs.appendChild(mythicTab);
+}
+function updateDeckStatusBar(){
+  const bar=document.getElementById('deck-status-bar');
+  if(!bar) return;
+  document.getElementById('deck-status-text').textContent = `🃏 デッキ: ${STATE.deck.length}/5`;
+  document.getElementById('btn-edit-deck').textContent = deckEditMode ? 'かんりょう ✅' : 'デッキを編集する';
+  document.getElementById('btn-edit-deck').classList.toggle('secondary', !deckEditMode);
 }
 function renderCollectionGrid(){
   const grid=document.getElementById('coll-grid');
@@ -1125,8 +1194,10 @@ function renderCollectionGrid(){
   else if(currentTab==='mythic'){ list=MYTHIC_POOL; ownedMap=STATE.ownedMythic; mode='mythic'; }
   else { list=GRADE_DATA[currentTab]; ownedMap=STATE.owned; }
   const ownedCount = list.filter(e=> mode==='grade' ? ownedMap[currentTab+':'+e.k] : ownedMap[e.k]).length;
-  const label = mode==='mythic' ? '🌟 ひでんカード ' : (mode==='rare' ? '✨ とくべつカード ' : (currentTab+'年生の かんじ '));
+  const label = mode==='mythic' ? '🌟 ひでんカード ' : (mode==='rare' ? '🈲 教科書外レア ' : (currentTab+'年生の かんじ '));
   document.getElementById('coll-summary').textContent = label+`${ownedCount} / ${list.length}`;
+  const deckScope = mode; // 'grade' | 'rare' | 'mythic'
+  const deckGrade = mode==='grade' ? currentTab : null;
   list.forEach(entry=>{
     const owned = mode==='grade' ? ownedMap[currentTab+':'+entry.k] : ownedMap[entry.k];
     const tier = mode==='mythic' ? 'mythic' : (mode==='rare' ? 'ur' : GRADE_TIERS[currentTab][entry.k]);
@@ -1138,8 +1209,26 @@ function renderCollectionGrid(){
       dot.className='dot';
       dot.style.background = {n:'var(--n-color)',r:'var(--r-color)',sr:'var(--sr-color)',ur:'var(--ur-color)',mythic:'var(--mythic-color)'}[tier];
       el.appendChild(dot);
+      if(deckEditMode && isInDeck(deckScope, deckGrade, entry.k)){
+        el.classList.add('in-deck');
+        const chk=document.createElement('div');
+        chk.className='deck-check';
+        chk.textContent='✓';
+        el.appendChild(chk);
+      }
     }
-    el.onclick=()=>{ sfx('tap'); openDetail(entry, tier, mode==='grade'? currentTab : null, owned); };
+    el.onclick=()=>{
+      sfx('tap');
+      if(deckEditMode){
+        if(!owned){ toast('みかくとくの カードは デッキに いれられません'); return; }
+        const res=toggleDeckCard(deckScope, deckGrade, entry.k);
+        if(res==='full'){ toast('デッキは 5まいまでです'); return; }
+        renderCollectionGrid();
+        updateDeckStatusBar();
+      } else {
+        openDetail(entry, tier, mode==='grade'? currentTab : null, owned);
+      }
+    };
     grid.appendChild(el);
   });
 }
@@ -1210,7 +1299,6 @@ function openEliteBattle(memberId){
 
 function renderBattleSelect(){
   const body=document.getElementById('battle-body');
-  const pool=getOwnedCardPool();
   const npc=battleState.npc;
   const headerHtml = npc
     ? `<div style="text-align:center; margin-bottom:8px;">
@@ -1219,40 +1307,31 @@ function renderBattleSelect(){
          <div style="font-size:12px; opacity:.75;">${npc.title}</div>
        </div>`
     : '';
-  if(pool.length===0){
-    body.innerHTML=headerHtml+`<div style="text-align:center; margin-top:30px; opacity:.85; line-height:1.7;">まだ カードが ないよ！<br>まず パックを あけて<br>カードを あつめよう✨</div>`;
+  const deckCards = resolveDeckCards();
+  if(deckCards.length===0){
+    body.innerHTML=headerHtml+`
+      <div style="text-align:center; margin-top:20px; opacity:.9; line-height:1.8;">
+        まだ デッキが くまれていません。<br>
+        📖 図鑑で つかう カードを 5まい えらぼう！
+      </div>
+      <button class="btn" id="btn-go-zukan-deck" style="margin-top:18px;">📖 図鑑で デッキを つくる</button>
+    `;
+    document.getElementById('btn-go-zukan-deck').onclick=()=>{ try{ sfx('tap'); }catch(e){} openCollection(true); };
     return;
   }
-  const need=Math.min(5,pool.length);
+  const previewHtml = deckCards.map(c=>`
+    <div class="mini-card ${c.tier}" style="width:58px; cursor:default;">${c.entry.k}</div>
+  `).join('');
   body.innerHTML=headerHtml+`
-    <div style="text-align:center; font-size:13px; opacity:.85; margin:8px 0 4px;">
-      デッキに いれる カードを ${need}まい えらんでね<br>
-      えらんだ: <span id="sel-count">0</span> / ${need}
-    </div>
-    <div class="coll-grid" id="battle-select-grid" style="width:100%; max-height:40vh;"></div>
-    <button class="btn" id="btn-start-battle" style="margin-top:16px;" disabled>⚔️ バトルかいし！</button>
+    <div style="text-align:center; font-size:13px; opacity:.85; margin:6px 0 10px;">いまの デッキ (${deckCards.length}まい)</div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center; max-width:380px;">${previewHtml}</div>
+    <button class="btn secondary" id="btn-edit-deck-from-battle" style="margin-top:16px;">📖 デッキを 編集する</button>
+    <button class="btn" id="btn-start-battle" style="margin-top:10px;">⚔️ バトルかいし！</button>
   `;
-  const grid=document.getElementById('battle-select-grid');
-  pool.forEach((c,idx)=>{
-    const el=document.createElement('div');
-    el.className='mini-card selectable '+c.tier;
-    el.textContent=c.entry.k;
-    el.onclick=()=>{
-      try{ sfx('tap'); }catch(e){}
-      const i=battleState.selected.indexOf(idx);
-      if(i>=0){ battleState.selected.splice(i,1); el.classList.remove('picked'); }
-      else{
-        if(battleState.selected.length>=need) return;
-        battleState.selected.push(idx); el.classList.add('picked');
-      }
-      document.getElementById('sel-count').textContent=battleState.selected.length;
-      document.getElementById('btn-start-battle').disabled = battleState.selected.length!==need;
-    };
-    grid.appendChild(el);
-  });
+  document.getElementById('btn-edit-deck-from-battle').onclick=()=>{ try{ sfx('tap'); }catch(e){} openCollection(true); };
   document.getElementById('btn-start-battle').onclick=()=>{
     try{ sfx('tap'); }catch(e){}
-    battleState.playerDeck = battleState.selected.map(i=>pool[i]);
+    battleState.playerDeck = deckCards.slice();
     if(battleState.mode==='free'){
       battleState.oppDeck = generatePack(STATE.grade).slice(0, battleState.playerDeck.length);
     } else {
@@ -1576,7 +1655,23 @@ document.getElementById('btn-open-pack').onclick=()=>{ try{ sfx('tap'); ensureAu
 document.getElementById('btn-daily').onclick=()=>{ try{ sfx('tap'); ensureAudio(); }catch(e){console.warn(e);} openPackFlow(true); };
 document.getElementById('btn-special-pack').onclick=()=>{ try{ sfx('tap'); ensureAudio(); }catch(e){console.warn(e);} openSpecialPackFlow(); };
 document.getElementById('btn-goto-collection').onclick=()=>{ try{ sfx('tap'); }catch(e){} openCollection(); };
-document.getElementById('btn-coll-back').onclick=()=>{ try{ sfx('tap'); }catch(e){} goHome(); };
+document.getElementById('btn-coll-back').onclick=()=>{
+  try{ sfx('tap'); }catch(e){}
+  if(collectionCameFromBattle && battleState){
+    collectionCameFromBattle=false;
+    showScreen('screen-battle');
+    renderBattleSelect();
+  } else {
+    goHome();
+  }
+};
+document.getElementById('btn-edit-deck').onclick=()=>{
+  try{ sfx('tap'); }catch(e){}
+  deckEditMode=!deckEditMode;
+  renderCollectionGrid();
+  updateDeckStatusBar();
+  if(!deckEditMode) toast('デッキを ほぞんしました！');
+};
 document.getElementById('btn-goto-battle').onclick=()=>{ try{ sfx('tap'); }catch(e){} openBattle('free'); };
 document.getElementById('btn-battle-back').onclick=()=>{ try{ sfx('tap'); }catch(e){} goHome(); };
 document.getElementById('btn-goto-gym').onclick=()=>{ try{ sfx('tap'); }catch(e){} openGymScreen(); };
